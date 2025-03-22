@@ -117,8 +117,6 @@ Para começar:
 4. Push para a Branch (`git push origin feature/AmazingFeature`)
 5. Abra um Pull Request
 
-Consulte nosso [Guia de Contribuição](CONTRIBUTING.md) para mais detalhes sobre nosso processo de desenvolvimento e padrões de código.
-
 Junte-se a nós e faça parte desta jornada para transformar a forma como documentamos APIs!
 
 ## Contato
