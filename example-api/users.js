@@ -1,4 +1,5 @@
 /**
+ *example-api\users.js
  * @api {get} /api/users Listar Usuários
  * @apiName GetUsers
  * @apiGroup Usuários

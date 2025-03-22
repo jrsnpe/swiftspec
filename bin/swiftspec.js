@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-
 const path = require("path");
 const fs = require("fs");
 const { generateDocs } = require("../lib/generator");
@@ -20,7 +19,7 @@ function printUsage() {
 }
 
 function handleGenerate() {
-  const templateDir = path.resolve(args[0] || path.join(__dirname, "../templates"));
+  const templateDir = path.resolve(args[0] || path.join(__dirname, "../example-api"));
   const outputDir = path.resolve(args[1] || "./docs");
 
   if (!fs.existsSync(templateDir)) {
@@ -30,7 +29,6 @@ function handleGenerate() {
 
   console.log(`Gerando documentação a partir de ${templateDir}`);
   generateDocs(templateDir, outputDir);
-  console.log(`Documentação gerada em ${outputDir}`);
 }
 
 function handleServe() {

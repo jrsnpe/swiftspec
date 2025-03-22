@@ -550,8 +550,8 @@
       }
 
       function clearInputs(button) {
-        const accordionBody = button.closest('.accordion-body');
-        const inputs = accordionBody.querySelectorAll('input');
+        const accordionBody = button.closest(".accordion-body");
+        const inputs = accordionBody.querySelectorAll("input");
         inputs.forEach((input) => (input.value = ""));
 
         // Limpar o resultado da consulta
@@ -585,12 +585,12 @@
 
         method = method.toUpperCase();
 
-        const accordionBody = event.target.closest('.accordion-body');
-        const inputs = accordionBody.querySelectorAll('input');
+        const accordionBody = event.target.closest(".accordion-body");
+        const inputs = accordionBody.querySelectorAll("input");
         const params = {};
         inputs.forEach((input) => {
           if (input.value) {
-            params[input.id] = input.id === 'id' ? parseInt(input.value, 10) : input.value;
+            params[input.id] = input.id === "id" ? parseInt(input.value, 10) : input.value;
           }
         });
 
@@ -737,22 +737,22 @@
       }
 
       function toggleContent() {
-        const userTab = document.getElementById('users-tab');
-        const devTab = document.getElementById('developers-tab');
-        const userContent = document.getElementById('user-content');
-        const devContent = document.getElementById('developer-content');
-        const apiContent = document.getElementById('api-content');
+        const userTab = document.getElementById("users-tab");
+        const devTab = document.getElementById("developers-tab");
+        const userContent = document.getElementById("user-content");
+        const devContent = document.getElementById("developer-content");
+        const apiContent = document.getElementById("api-content");
 
-        userTab.addEventListener('click', () => {
-          userContent.style.display = 'block';
-          devContent.style.display = 'none';
-          apiContent.style.display = 'none';
+        userTab.addEventListener("click", () => {
+          userContent.style.display = "block";
+          devContent.style.display = "none";
+          apiContent.style.display = "none";
         });
 
-        devTab.addEventListener('click', () => {
-          userContent.style.display = 'none';
-          devContent.style.display = 'block';
-          apiContent.style.display = 'none';
+        devTab.addEventListener("click", () => {
+          userContent.style.display = "none";
+          devContent.style.display = "block";
+          apiContent.style.display = "none";
         });
       }
 
