@@ -32,8 +32,6 @@
 - [Começando](#começando)
   - [Pré-requisitos](#pré-requisitos)
   - [Instalação](#instalação)
-  - [Configuração](#configuração)
-- [Uso](#uso)
 - [Contribuindo](#contribuindo)
 - [Contato](#contato)
 
@@ -49,7 +47,6 @@ SwiftSpec é uma ferramenta de documentação de API projetada para transformar 
 - 🔄 **Sincronização em Tempo Real**: Atualizações automáticas conforme o código muda
 - 🌐 **Suporte Multi-linguagem**: Compatível com várias linguagens e frameworks
 - 👥 **Colaboração Integrada**: Facilita o trabalho em equipe na documentação
-- 🛠 **Configuração Interativa**: Processo de configuração guiado para uma experiência personalizada
 
 ## Começando
 
@@ -62,6 +59,7 @@ SwiftSpec é uma ferramenta de documentação de API projetada para transformar 
 
 ```bash
 npm install -g swiftspec
+```
 
 ## Contribuindo
 
@@ -118,4 +116,3 @@ Temos vários canais para você entrar em contato conosco:
 
 Fique à vontade para nos contatar. Adoraríamos ouvir suas ideias, feedback ou qualquer pergunta que você possa ter!
 Participe das discussões, compartilhe suas experiências e aprenda com outros usuários do SwiftSpec!
-```
