@@ -1,6 +1,6 @@
 {
   "name": "swiftspec",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "SwiftSpec - Ferramenta de documentação de API rápida e impressionante para Node.js e JavaScript",
   "main": "lib/index.js",
   "bin": {
@@ -17,8 +17,7 @@
     "start": "node bin/swiftspec.js",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "prepublishOnly": "npm run lint",
-    "postinstall": "node scripts/postinstall.js"
+    "prepublishOnly": "npm run lint"
   },
   "keywords": [
     "api",
