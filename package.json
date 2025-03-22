@@ -1,0 +1,58 @@
+{
+  "name": "swiftspec",
+  "version": "1.0.15",
+  "description": "SwiftSpec - Ferramenta de documentação de API rápida e impressionante para Node.js e JavaScript",
+  "main": "lib/index.js",
+  "bin": {
+    "swiftspec": "bin/swiftspec.js"
+  },
+  "files": [
+    "bin",
+    "lib",
+    "templates",
+    "assets",
+    "scripts"
+  ],
+  "scripts": {
+    "test": "echo \"No tests specified\" && exit 0",
+    "start": "node bin/swiftspec.js",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "prepublishOnly": "npm run lint",
+    "postinstall": "node scripts/postinstall.js",
+    "configure": "node scripts/postinstall.js",
+    "unconfigure": "node scripts/unconfigure.js"
+  },
+  "keywords": [
+    "api",
+    "documentation",
+    "nodejs",
+    "javascript",
+    "swiftspec",
+    "docs"
+  ],
+  "author": "José Reginaldo <jrsnpe@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "acorn": "^8.5.0",
+    "acorn-walk": "^8.3.4",
+    "cors": "^2.8.5",
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "eslint": "^8.23.0",
+    "prettier": "^2.4.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jrsnpe/swiftspec.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jrsnpe/swiftspec/issues"
+  },
+  "homepage": "https://github.com/jrsnpe/swiftspec#readme",
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
+  }
+}

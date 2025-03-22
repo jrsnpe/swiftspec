@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SwiftSpec - Sobre o SwiftSpec</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
+    <style>
+      body {
+        font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        background-color: #f8f9fa;
+      }
+      .hero {
+        background: rgb(1, 38, 78);
+        background: linear-gradient(180deg, rgba(1, 38, 78, 1) 0%, rgba(0, 86, 179, 1) 100%);
+        color: white;
+        margin-bottom: 2rem;
+      }
+      .hero img {
+        max-width: 200px;
+        margin-bottom: 1rem;
+      }
+      .hero h1 {
+        font-size: 3.5rem;
+        font-weight: bold;
+      }
+      .hero p {
+        font-size: 1.5rem;
+        opacity: 0.9;
+        padding-bottom: 2rem;
+      }
+      .text-center {
+        text-align: center !important;
+      }
+      .container-fluid {
+        padding: 0;
+      }
+      .sidebar {
+        background-color: #0056b3;
+        padding: 20px;
+        height: 100vh;
+        overflow-y: auto;
+        color: white;
+      }
+      .content {
+        padding: 40px;
+      }
+      h1,
+      h2 {
+        color: #0056b3;
+      }
+      .nav-pills .nav-link {
+        color: rgba(255, 255, 255, 0.7);
+      }
+      .nav-pills .nav-link.active {
+        background-color: #00a0e9;
+        color: white;
+      }
+      .nav-item .submenu {
+        list-style: none;
+        padding-left: 20px;
+        margin: 5px 0;
+      }
+      .nav-item .submenu .nav-link {
+        padding-left: 25px;
+      }
+      .feature-icon {
+        font-size: 2.5rem;
+        color: #0056b3;
+        margin-bottom: 1rem;
+      }
+      .card {
+        transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        border: none;
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      }
+      .feature-card {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+      .feature-card .card-body {
+        flex-grow: 1;
+      }
+      .code-block {
+        background-color: #f8f9fa;
+        border-left: 4px solid #0056b3;
+        padding: 15px;
+        margin-bottom: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-md-3 sidebar">
+          <h3 class="mb-4">Navegação</h3>
+          <ul class="nav nav-pills flex-column mb-auto">
+            <li class="nav-item">
+              <a href="index.html" class="nav-link"> <i class="fas fa-home me-2"></i>Página Inicial </a>
+            </li>
+            <li class="nav-item">
+              <a
+                href="#"
+                class="nav-link collapsible active"
+                data-bs-toggle="collapse"
+                data-bs-target="#about-submenu"
+                aria-expanded="true"
+                aria-controls="about-submenu"
+              >
+                <i class="fas fa-info-circle me-2"></i>Sobre o SwiftSpec
+              </a>
+              <ul class="submenu collapse show" id="about-submenu">
+                <li>
+                  <a
+                    href="#"
+                    class="nav-link active"
+                    id="users-tab"
+                    data-bs-toggle="pill"
+                    data-bs-target="#users-content"
+                    role="tab"
+                    aria-controls="users-content"
+                    aria-selected="true"
+                  >
+                    <i class="fas fa-user me-2"></i>Para Usuários
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    class="nav-link"
+                    id="devs-tab"
+                    data-bs-toggle="pill"
+                    data-bs-target="#devs-content"
+                    role="tab"
+                    aria-controls="devs-content"
+                    aria-selected="false"
+                  >
+                    <i class="fas fa-code me-2"></i>Para Desenvolvedores
+                  </a>
+                </li>
+              </ul>
+            </li>
+            <li class="nav-item">
+              <a href="execution-report.html" class="nav-link"> <i class="fas fa-chart-bar me-2"></i>Relatório de Execução </a>
+            </li>
+          </ul>
+        </div>
+        <div class="col-md-9 content">
+          <div class="hero text-center">
+            <img src="assets/swiftspec-logo-w.png" alt="SwiftSpec Logo" class="img-fluid" />
+            <p class="lead">Informações para Usuários e Desenvolvedores do SwiftSpec</p>
+          </div>
+
+          <div class="tab-content" id="myTabContent">
+            <div class="tab-pane fade show active" id="users-content" role="tabpanel" aria-labelledby="users-tab">
+              <h2 class="mb-4">Sobre o SwiftSpec</h2>
+              <p class="lead">
+                SwiftSpec é uma ferramenta revolucionária de documentação de API, projetada para transformar o processo de criação e manutenção de
+                especificações de API. Com foco na eficiência e clareza, SwiftSpec permite que desenvolvedores e equipes técnicas criem documentação de API de
+                alta qualidade em uma fração do tempo tradicional.
+              </p>
+
+              <div class="row mt-5">
+                <div class="col-md-4 mb-4">
+                  <div class="card feature-card">
+                    <div class="card-body text-center">
+                      <i class="fas fa-bolt feature-icon"></i>
+                      <h3 class="card-title">Geração Rápida</h3>
+                      <p class="card-text">Crie documentação completa em questão de segundos, economizando tempo valioso.</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                  <div class="card feature-card">
+                    <div class="card-body text-center">
+                      <i class="fas fa-book feature-icon"></i>
+                      <h3 class="card-title">Clareza Incomparável</h3>
+                      <p class="card-text">Transforme códigos complexos em documentação cristalina e fácil de entender.</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                  <div class="card feature-card">
+                    <div class="card-body text-center">
+                      <i class="fas fa-paint-brush feature-icon"></i>
+                      <h3 class="card-title">Design Impressionante</h3>
+                      <p class="card-text">Crie APIs que não só funcionam bem, mas também impressionam visualmente.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <h2 id="instalacao" class="mt-5">Instalação</h2>
+              <p>Para instalar o SwiftSpec via npm, execute o seguinte comando:</p>
+              <div class="code-block">
+                <pre><code>npm install -g swiftspec</code></pre>
+              </div>
+
+              <h2 class="mt-5">Uso Básico</h2>
+              <p>Após a instalação, você pode usar o SwiftSpec da seguinte maneira:</p>
+              <div class="code-block">
+                <pre><code>swiftspec generate</code></pre>
+              </div>
+
+              <h3>Iniciar o servidor para visualizar a documentação já existente:</h3>
+              <div class="code-block">
+                <pre><code>swiftspec serve</code></pre>
+              </div>
+
+              <h3>Gerar a documentação e iniciar o servidor em um único comando:</h3>
+              <div class="code-block">
+                <pre><code>swiftspec start</code></pre>
+              </div>
+
+              <h2 class="mt-5">Utilização Manual</h2>
+
+              <h3>Gerar documentação para um projeto específico:</h3>
+              <div class="code-block">
+                <pre><code>swiftspec generate ./meu-diretorio-origem ./meu-diretorio-saida</code></pre>
+              </div>
+
+              <h3>Iniciar o servidor em uma porta específica:</h3>
+              <div class="code-block">
+                <pre><code>swiftspec serve ./meu-diretorio-saida 8080</code></pre>
+              </div>
+
+              <h3>Gerar e servir documentação em uma porta específica:</h3>
+              <div class="code-block">
+                <pre><code>swiftspec start ./meu-diretorio-saida 8080</code></pre>
+              </div>
+
+              <h2 class="mt-5">Configuração</h2>
+              <p>Configure o SwiftSpec criando um arquivo <code>swiftspec.config.js</code> na raiz do seu projeto:</p>
+              <div class="code-block">
+                <pre><code>module.exports = {
+  title: 'TaskMaster API',
+  version: '2.1.3',
+  description: 'API RESTful para o sistema de gerenciamento de tarefas TaskMaster',
+  baseUrl: 'https://api.taskmaster.com/v2',
+  // Mais opções de configuração...
+};</code></pre>
+              </div>
+
+              <h2 class="mt-5">Exemplos</h2>
+              <p>Aqui está um exemplo de como documentar um endpoint em seu código:</p>
+              <div class="code-block">
+                <pre><code>/**
+ * @api {get} /tasks/:id Obter tarefa por ID
+ * @apiName GetTask
+ * @apiGroup Tasks
+ * @apiParam {Number} id ID único da tarefa
+ * @apiSuccess {String} title Título da tarefa
+ * @apiSuccess {String} description Descrição da tarefa
+ * @apiSuccess {Boolean} completed Status de conclusão da tarefa
+ */
+app.get('/tasks/:id', (req, res) => {
+  // Lógica para obter tarefa
+});</code></pre>
+              </div>
+            </div>
+
+            <div class="tab-pane fade" id="devs-content" role="tabpanel" aria-labelledby="devs-tab">
+              <h2 class="mb-4">Para Desenvolvedores</h2>
+              <h3>Baixar do GitHub</h3>
+              <p>Para clonar o repositório do SwiftSpec, use o seguinte comando:</p>
+              <div class="code-block">
+                <pre><code>git clone https://github.com/swiftspec/swiftspec.git</code></pre>
+              </div>
+
+              <h3 class="mt-5">Setup do Projeto</h3>
+              <ol>
+                <li>Certifique-se de ter o Node.js instalado (versão 14 ou superior)</li>
+                <li>
+                  Navegue até o diretório do projeto:
+                  <div class="code-block">
+                    <pre><code>cd swiftspec</code></pre>
+                  </div>
+                </li>
+                <li>
+                  Instale as dependências:
+                  <div class="code-block">
+                    <pre><code>npm install</code></pre>
+                  </div>
+                </li>
+                <li>
+                  Para iniciar o servidor de desenvolvimento:
+                  <div class="code-block">
+                    <pre><code>npm run dev</code></pre>
+                  </div>
+                </li>
+              </ol>
+
+              <h3 class="mt-5">Configuração</h3>
+              <p>Se a configuração não iniciar automaticamente, você pode executá-la manualmente:</p>
+              <div class="code-block">
+                <pre><code>npx swiftspec configure</code></pre>
+              </div>
+
+              <p>Se a configuração ficou incorreta, você pode remover e iniciar o processo novamente:</p>
+              <div class="code-block">
+                <pre><code>npx swiftspec unconfigure</code></pre>
+              </div>
+
+              <h3 class="mt-5">Para exclusão manual do arquivo de configuração:</h3>
+              <ul>
+                <li>Localize e exclua o arquivo <code>swiftspec.config.json</code> na raiz do seu projeto.</li>
+                <li>Após remover a configuração, o SwiftSpec usará as configurações padrão em futuras execuções, ou você pode reconfigurar.</li>
+              </ul>
+
+              <h3 class="mt-5">Estrutura do Projeto</h3>
+              <div class="code-block">
+                <pre><code>swiftspec/
+├── src/
+│   ├── templates/
+│   ├── parser/
+│   ├── generator/
+│   └── index.js
+├── tests/
+├── docs/
+├── package.json
+└── README.md</code></pre>
+              </div>
+
+              <h3 class="mt-5">Como Contribuir</h3>
+              <ol>
+                <li>Faça um fork do repositório</li>
+                <li>Crie uma branch para sua feature: <code>git checkout -b feature/nova-funcionalidade</code></li>
+                <li>Faça commit das suas alterações: <code>git commit -am 'Adiciona nova funcionalidade'</code></li>
+                <li>Faça push para a branch: <code>git push origin feature/nova-funcionalidade</code></li>
+                <li>Crie um novo Pull Request</li>
+              </ol>
+
+              <h3 class="mt-5">Diretrizes de Código</h3>
+              <ul>
+                <li>Siga o estilo de código estabelecido no projeto (utilizamos ESLint e Prettier)</li>
+                <li>Escreva testes unitários para novas funcionalidades</li>
+                <li>Mantenha a documentação atualizada, incluindo JSDoc nos componentes principais</li>
+                <li>Use nomes descritivos para variáveis e funções</li>
+                <li>Priorize código legível e auto-explicativo, usando comentários apenas quando necessário</li>
+              </ul>
+
+              <h3 class="mt-5">Executando Testes</h3>
+              <p>Para executar os testes do projeto:</p>
+              <div class="code-block">
+                <pre><code>npm test</code></pre>
+              </div>
+
+              <h3 class="mt-5">Gerando a Documentação</h3>
+              <p>Para gerar a documentação do projeto SwiftSpec:</p>
+              <div class="code-block">
+                <pre><code>npm run generate-docs</code></pre>
+              </div>
+              <p>A documentação será gerada no diretório <code>docs/</code></p>
+            </div>
+          </div>
+
+          <footer class="mt-5 text-center text-muted">
+            <p>SwiftSpec - Desenvolvido com ❤️ para tornar a documentação de API rápida e impressionante</p>
+          </footer>
+        </div>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // Controla a classe "active" no menu lateral e nas abas de conteúdo
+      document.querySelectorAll(".nav-link[data-bs-toggle='pill']").forEach((tabLink) => {
+        tabLink.addEventListener("click", (e) => {
+          e.preventDefault();
+
+          // Remova a classe "active" de todos os links e seções
+          document.querySelectorAll(".nav-link").forEach((link) => {
+            link.classList.remove("active");
+          });
+          document.querySelectorAll(".tab-pane").forEach((tabPane) => {
+            tabPane.classList.remove("show", "active");
+          });
+
+          // Adicione a classe "active" ao item clicado e exiba o conteúdo correspondente
+          tabLink.classList.add("active");
+          const target = document.querySelector(tabLink.getAttribute("data-bs-target"));
+          if (target) {
+            target.classList.add("show", "active");
+          }
+
+          // Se o item clicado for um subitem, ative também o item pai
+          const parentItem = tabLink.closest(".nav-item");
+          if (parentItem) {
+            const parentLink = parentItem.querySelector(".nav-link.collapsible");
+            if (parentLink) {
+              parentLink.classList.add("active");
+            }
+          }
+        });
+      });
+
+      // Ative o primeiro item do submenu por padrão
+      document.querySelector(".submenu .nav-link").click();
+    </script>
+  </body>
+</html>
