@@ -31,7 +31,9 @@
 - [Características](#características)
 - [Começando](#começando)
   - [Pré-requisitos](#pré-requisitos)
-  - [Instalação](#instalação)
+  - [Instalação](#instalação-e-utilização)
+  - [Instalação](#utilização-manual)
+  - [Versões Obsoletas](#versões-obsoletas)
 - [Contribuindo](#contribuindo)
 - [Contato](#contato)
 
@@ -55,7 +57,7 @@ SwiftSpec é uma ferramenta de documentação de API projetada para transformar 
 - Node.js (versão 14.0.0 ou superior)
 - npm (normalmente vem com Node.js)
 
-### Instalação
+### Instalação e Utilização
 
 ```bash
 npm install swiftspec
@@ -111,6 +113,16 @@ Gerar e servir documentação em uma porta específica:
 swiftspec start ./meu-diretorio-saida 8080
 ```
 
+## Versões Obsoletas
+
+Recomendamos fortemente que todos os usuários atualizem para a versão mais recente para obter as últimas correções de bugs, melhorias de segurança e novas funcionalidades.
+
+Para atualizar, execute:
+
+```bash
+npm install -g swiftspec@latest
+```
+
 ## Contribuindo
 
 SwiftSpec é um projeto de código aberto e nós adoraríamos contar com a sua ajuda para torná-lo ainda melhor! Há várias maneiras de contribuir:
@@ -164,3 +176,7 @@ Temos vários canais para você entrar em contato conosco:
 
 Fique à vontade para nos contatar. Adoraríamos ouvir suas ideias, feedback ou qualquer pergunta que você possa ter!
 Participe das discussões, compartilhe suas experiências e aprenda com outros usuários do SwiftSpec!
+
+```
+
+```
