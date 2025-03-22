@@ -75,6 +75,12 @@ Se a configuração não iniciar automaticamente, você pode executá-la manualm
 npx swiftspec configure
 ```
 
+Se a configuração ficou incorreta, você pode remover e iniciar o processo novamente:
+
+```bash
+npx swiftspec unconfigure
+```
+
 Gerar a documentação do seu projeto:
 
 ```bash
@@ -112,6 +118,11 @@ Gerar e servir documentação em uma porta específica:
 ```bash
 swiftspec start ./meu-diretorio-saida 8080
 ```
+
+Para exclusão manual do arquivo de configuração:
+
+- Localize e exclua o arquivo `swiftspec.config.json` na raiz do seu projeto.
+- Após remover a configuração, o SwiftSpec usará as configurações padrão em futuras execuções, ou você pode reconfigurar.
 
 ## Versões Obsoletas
 
