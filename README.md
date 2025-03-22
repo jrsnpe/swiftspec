@@ -91,6 +91,26 @@ Gerar a documentação e iniciar o servidor em um único comando:
 swiftspec start
 ```
 
+### Utilização Manual
+
+Gerar documentação para um projeto específico:
+
+```bash
+swiftspec generate ./meu-diretorio-origem ./meu-diretorio-saida
+```
+
+Iniciar o servidor em uma porta específica:
+
+```bash
+swiftspec serve ./meu-diretorio-saida 8080
+```
+
+Gerar e servir documentação em uma porta específica:
+
+```bash
+swiftspec start ./meu-diretorio-saida 8080
+```
+
 ## Contribuindo
 
 SwiftSpec é um projeto de código aberto e nós adoraríamos contar com a sua ajuda para torná-lo ainda melhor! Há várias maneiras de contribuir:
