@@ -19,7 +19,9 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "prepublishOnly": "npm run lint",
-    "postinstall": "node scripts/postinstall.js"
+    "postinstall": "node scripts/postinstall.js",
+    "prepare": "node scripts/postinstall.js",
+    "configure": "node scripts/postinstall.js"
   },
   "keywords": [
     "api",

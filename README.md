@@ -58,7 +58,37 @@ SwiftSpec é uma ferramenta de documentação de API projetada para transformar 
 ### Instalação
 
 ```bash
+npm install swiftspec
+```
+
+ou globalmente:
+
+```bash
 npm install -g swiftspec
+```
+
+Se a configuração não iniciar automaticamente, você pode executá-la manualmente:
+
+```bash
+npx swiftspec configure
+```
+
+Gerar a documentação do seu projeto:
+
+```bash
+swiftspec generate
+```
+
+Iniciar o servidor para visualizar a documentação já existente:
+
+```bash
+swiftspec serve
+```
+
+Gerar a documentação e iniciar o servidor em um único comando:
+
+```bash
+swiftspec start
 ```
 
 ## Contribuindo
