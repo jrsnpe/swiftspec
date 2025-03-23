@@ -243,28 +243,41 @@
         }));
       }
 
-      const apiDocs = cleanApiDocs(JSON.parse(decodeURIComponent("{{API_DOCS_JSON}}")));
-      console.log("apiDocs:", apiDocs);
+      let apiDocs;
+      try {
+        apiDocs = cleanApiDocs(JSON.parse(decodeURIComponent("{{API_DOCS_JSON}}")));
+      } catch (error) {
+        console.error("Erro ao parsear API_DOCS_JSON:", error);
+        apiDocs = [];
+      }
+      console.log("API Docs after initialization:", apiDocs);
 
       function renderSidebar() {
         const sidebarContent = document.getElementById("sidebar-content");
+        const fragment = document.createDocumentFragment();
         apiDocs.forEach((api, index) => {
           const item = document.createElement("div");
           item.className = "sidebar-item";
           item.textContent = `${api.method} ${api.path}`;
           item.onclick = () => showApiItem(index);
-          sidebarContent.appendChild(item);
+          fragment.appendChild(item);
         });
+        sidebarContent.appendChild(fragment);
       }
 
       function showApiItem(index) {
+        console.log("Showing API item at index:", index);
         const apiContent = document.getElementById("api-content");
 
         apiContent.classList.remove("fade-transition");
         apiContent.style.opacity = 0;
 
         setTimeout(() => {
-          apiContent.innerHTML = generateApiHtml(apiDocs[index]);
+          const info = apiDocs[index];
+          console.log("Generating HTML for API:", info);
+          const generatedHtml = generateApiHtml(info);
+          apiContent.innerHTML = generatedHtml;
+          console.log("Generated HTML content:", generatedHtml);
           apiContent.classList.add("fade-transition");
           apiContent.style.opacity = 1;
 
@@ -274,272 +287,359 @@
       }
 
       function generateApiHtml(info) {
-        const pathParams = info.path.match(/:[a-zA-Z]+/g) || [];
-        const queryParams = info.params.filter((param) => {
-          const paramName = param.split(" ")[0];
-          return !pathParams.includes(`:${paramName}`);
-        });
+        console.log("Generating HTML for API:", info);
 
-        return `
-          <div class="api-item">
-            <div class="api-item-header">
-              <span class="method ${info.method.toLowerCase()}">${info.method}</span>
-              <span class="path">${info.path}</span>
-              <span class="version-tag">v${info.version}</span>
-            </div>
-            <div class="api-item-content">
-              <h2>${info.summary}</h2>
-              <p>${info.description}</p>
-              
-              ${
-                info.authRequired
-                  ? `
-                <div class="auth-required">
-                  <strong>Autenticação requerida:</strong> Este endpoint requer autenticação.
-                </div>
+        if (!info || typeof info !== "object") {
+          console.error("Invalid info object:", info);
+          return "<p>Error: Invalid API information</p>";
+        }
+
+        function generateParametersSection(params) {
+          if (!Array.isArray(params) || params.length === 0) {
+            return "<p>Este endpoint não possui parâmetros.</p>";
+          }
+
+          return `
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Tipo</th>
+            <th>Descrição</th>
+            <th>Obrigatório</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${params
+            .map(
+              (param) => `
+            <tr>
+              <td>${param.name}</td>
+              <td>${param.type}</td>
+              <td>${param.description}</td>
+              <td class="${param.optional ? "param-optional" : "param-required"}">${param.optional ? "Não" : "Sim"}</td>
+            </tr>
+          `
+            )
+            .join("")}
+        </tbody>
+      </table>
+    `;
+        }
+
+        function generateSuccessSection(info) {
+          if (!Array.isArray(info.success) || info.success.length === 0) {
+            return "";
+          }
+
+          return `
+    <div class="accordion-item">
+      <h2 class="accordion-header" id="headingSuccess">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSuccess" aria-expanded="false" aria-controls="collapseSuccess">
+          Resposta de Sucesso
+        </button>
+      </h2>
+      <div id="collapseSuccess" class="accordion-collapse collapse" aria-labelledby="headingSuccess" data-bs-parent="#apiAccordion">
+        <div class="accordion-body">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Campo</th>
+                <th>Tipo</th>
+                <th>Descrição</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${info.success
+                .map(
+                  (s) => `
+                <tr>
+                  <td>${s.name}</td>
+                  <td>${s.type}</td>
+                  <td>${s.description}</td>
+                </tr>
               `
-                  : ""
-              }
+                )
+                .join("")}
+            </tbody>
+          </table>
+          
+          ${
+            info.successExample
+              ? `
+            <h4>Exemplo de Resposta:</h4>
+            <pre><code class="language-json">${escapeHtml(info.successExample)}</code></pre>
+          `
+              : ""
+          }
+        </div>
+      </div>
+    </div>
+  `;
+        }
 
-              ${
-                info.deprecated
-                  ? `
-                <div class="deprecated">
-                  <strong>Deprecated:</strong> Este endpoint está obsoleto e será removido em versões futuras.
-                </div>
+        function generateErrorSection(info) {
+          if (!Array.isArray(info.error) || info.error.length === 0) {
+            return "";
+          }
+
+          return `
+    <div class="accordion-item">
+      <h2 class="accordion-header" id="headingError">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseError" aria-expanded="false" aria-controls="collapseError">
+          Respostas de Erro
+        </button>
+      </h2>
+      <div id="collapseError" class="accordion-collapse collapse" aria-labelledby="headingError" data-bs-parent="#apiAccordion">
+        <div class="accordion-body">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Descrição</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${info.error
+                .map(
+                  (e) => `
+                <tr>
+                  <td>${e.group || e.name}</td>
+                  <td>${e.description}</td>
+                </tr>
               `
-                  : ""
-              }
+                )
+                .join("")}
+            </tbody>
+          </table>
+          ${info.errorExample
+            .map(
+              (example, index) => `
+            <h4>Exemplo de Erro ${index + 1}:</h4>
+            <pre><code class="language-json">${escapeHtml(example)}</code></pre>
+          `
+            )
+            .join("")}
+        </div>
+      </div>
+    </div>
+  `;
+        }
 
-              <div class="accordion" id="apiAccordion">
-                <div class="accordion-item">
-                  <h2 class="accordion-header" id="headingParameters">
-                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseParameters" aria-expanded="true" aria-controls="collapseParameters">
-                      Parâmetros
-                    </button>
-                  </h2>
-                  <div id="collapseParameters" class="accordion-collapse collapse show" aria-labelledby="headingParameters" data-bs-parent="#apiAccordion">
-                    <div class="accordion-body">
-                      ${
-                        info.params.length > 0
-                          ? `
-                        <table class="table">
-                          <thead>
-                            <tr>
-                              <th>Nome</th>
-                              <th>Tipo</th>
-                              <th>Descrição</th>
-                              <th>Obrigatório</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            ${info.params
-                              .map((param) => {
-                                const [name, type, ...descParts] = param.split(" ");
-                                const description = descParts.join(" ");
-                                const isRequired = !param.includes("[") && !param.includes("opcional");
-                                return `<tr>
-                                  <td>${name}</td>
-                                  <td>${type}</td>
-                                  <td>${description}</td>
-                                  <td class="${isRequired ? "param-required" : "param-optional"}">${isRequired ? "Sim" : "Não"}</td>
-                                </tr>`;
-                              })
-                              .join("")}
-                          </tbody>
-                        </table>
-                      `
-                          : "<p>Este endpoint não possui parâmetros.</p>"
-                      }
-                    </div>
-                  </div>
-                </div>
+        function escapeHtml(unsafe) {
+          return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
 
-                <div class="accordion-item">
-                  <h2 class="accordion-header" id="headingSuccess">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSuccess" aria-expanded="false" aria-controls="collapseSuccess">
-                      Resposta de Sucesso
-                    </button>
-                  </h2>
-                  <div id="collapseSuccess" class="accordion-collapse collapse" aria-labelledby="headingSuccess" data-bs-parent="#apiAccordion">
-                    <div class="accordion-body">
-                      <h4>Código de Status: ${info.successStatus || "200 OK"}</h4>
-                      ${
-                        info.success.length > 0
-                          ? `
-                        <table class="table">
-                          <thead>
-                            <tr>
-                              <th>Campo</th>
-                              <th>Tipo</th>
-                              <th>Descrição</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            ${info.success
-                              .map((success) => {
-                                const [field, type, ...descParts] = success.split(" ");
-                                const description = descParts.join(" ");
-                                return `<tr>
-                                  <td>${field}</td>
-                                  <td>${type}</td>
-                                  <td>${description}</td>
-                                </tr>`;
-                              })
-                              .join("")}
-                          </tbody>
-                        </table>
-                      `
-                          : "<p>Não há informações detalhadas sobre a resposta de sucesso.</p>"
-                      }
-                      ${
-                        info.successExample
-                          ? `
-                        <div class="response-container">
-                          <div class="response-header">Exemplo de Resposta:</div>
-                          <div class="response-body">
-                            <pre><code class="language-json">${formatJson(info.successExample)}</code></pre>
-                          </div>
-                        </div>
-                      `
-                          : ""
-                      }
-                      ${
-                        info.responseSchema
-                          ? `
-                        <div class="schema">
-                          <strong>Schema da Resposta:</strong>
-                          <pre><code class="language-json">${formatJson(info.responseSchema)}</code></pre>
-                        </div>
-                      `
-                          : ""
-                      }
-                    </div>
-                  </div>
-                </div>
+        function generateHeadersSection(headers) {
+          if (!Array.isArray(headers) || headers.length === 0) {
+            return "";
+          }
 
-                <div class="accordion-item">
-                  <h2 class="accordion-header" id="headingError">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseError" aria-expanded="false" aria-controls="collapseError">
-                      Respostas de Erro
-                    </button>
-                  </h2>
-                  <div id="collapseError" class="accordion-collapse collapse" aria-labelledby="headingError" data-bs-parent="#apiAccordion">
-                    <div class="accordion-body">
-                      ${
-                        info.error.length > 0
-                          ? `
-                        <table class="table">
-                          <thead>
-                            <tr>
-                              <th>Código</th>
-                              <th>Descrição</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            ${info.error
-                              .map((error) => {
-                                const [code, ...descParts] = error.split(" ");
-                                const description = descParts.join(" ");
-                                return `<tr>
-                                  <td>${code}</td>
-                                  <td>${description}</td>
-                                </tr>`;
-                              })
-                              .join("")}
-                          </tbody>
-                        </table>
-                      `
-                          : "<p>Não há informações detalhadas sobre respostas de erro.</p>"
-                      }
-                      ${
-                        info.errorExample
-                          ? `
-                        <div class="response-container">
-                          <div class="response-header">Exemplo de Erro:</div>
-                          <div class="response-body">
-                            <pre><code class="language-json">${formatJson(info.errorExample)}</code></pre>
-                          </div>
-                        </div>
-                      `
-                          : ""
-                      }
-                    </div>
-                  </div>
-                </div>
-
-                ${
-                  info.notes
-                    ? `
-                  <div class="accordion-item">
-                    <h2 class="accordion-header" id="headingNotes">
-                      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseNotes" aria-expanded="false" aria-controls="collapseNotes">
-                        Notas Adicionais
-                      </button>
-                    </h2>
-                    <div id="collapseNotes" class="accordion-collapse collapse" aria-labelledby="headingNotes" data-bs-parent="#apiAccordion">
-                      <div class="accordion-body">
-                        <p>${info.notes}</p>
-                      </div>
-                    </div>
-                  </div>
+          return `
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="headingHeaders">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseHeaders" aria-expanded="false" aria-controls="collapseHeaders">
+            Headers
+          </button>
+        </h2>
+        <div id="collapseHeaders" class="accordion-collapse collapse" aria-labelledby="headingHeaders" data-bs-parent="#apiAccordion">
+          <div class="accordion-body">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>Tipo</th>
+                  <th>Descrição</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${headers
+                  .map(
+                    (h) => `
+                  <tr>
+                    <td>${h.name}</td>
+                    <td>${h.type}</td>
+                    <td>${h.description}</td>
+                  </tr>
                 `
-                    : ""
-                }
+                  )
+                  .join("")}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    `;
+        }
 
-                <div class="accordion-item try-it-out-accordion">
-                  <h2 class="accordion-header" id="headingTryItOut">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTryItOut" aria-expanded="false" aria-controls="collapseTryItOut">
-                      Try it out
-                    </button>
-                  </h2>
-                  <div id="collapseTryItOut" class="accordion-collapse collapse" aria-labelledby="headingTryItOut" data-bs-parent="#apiAccordion">
-                    <div class="accordion-body">
-                      <h3>Testar Endpoint</h3>
-                      ${pathParams
-                        .map((param) => {
-                          const paramName = param.slice(1);
-                          return `
-                        <div class="mb-3">
-                          <label for="${paramName}" class="form-label">${paramName}</label>
-                          <input type="text" class="form-control" id="${paramName}" placeholder="Digite o ${paramName}">
-                        </div>`;
-                        })
-                        .join("")}
-                      ${queryParams
-                        .map((param) => {
-                          const [name, type] = param.split(" ");
-                          return `
-                        <div class="mb-3">
-                          <label for="${name}" class="form-label">${name}</label>
-                          <input type="text" class="form-control" id="${name}" placeholder="${type}">
-                        </div>`;
-                        })
-                        .join("")}
-                      <button class="btn btn-success" onclick="testEndpoint('${info.method}', '${info.path}')">Execute</button>
-                      <button class="btn btn-secondary" onclick="clearInputs(this)">Limpar</button>
-                      <div id="testOutput" class="response-container mt-3" style="display: none;">
-                        <div class="response-header">Resposta:</div>
-                        <div class="response-body position-relative">
-                          <button class="copy-button" onclick="copyResponse(this)">Copiar</button>
-                          <pre><code class="language-json"></code></pre>
-                        </div>
-                        <div class="format-selector">
-                          <label for="formatSelect" class="form-label">Formato de saída:</label>
-                          <select id="formatSelect" class="form-select" onchange="changeOutputFormat(this)">
-                            <option value="json" selected>JSON</option>
-                            <option value="xml">XML</option>
-                            <option value="yaml">YAML</option>
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+        function generateSecuritySection(info) {
+          if (!info.securityDefinition && (!Array.isArray(info.security) || info.security.length === 0)) {
+            return "";
+          }
+
+          return `
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="headingSecurity">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSecurity" aria-expanded="false" aria-controls="collapseSecurity">
+            Segurança
+          </button>
+        </h2>
+        <div id="collapseSecurity" class="accordion-collapse collapse" aria-labelledby="headingSecurity" data-bs-parent="#apiAccordion">
+          <div class="accordion-body">
+            ${info.securityDefinition ? `<p><strong>Definição de Segurança:</strong> ${info.securityDefinition}</p>` : ""}
+            ${
+              Array.isArray(info.security) && info.security.length > 0
+                ? `
+              <p><strong>Segurança Requerida:</strong></p>
+              <ul>
+                ${info.security.map((s) => `<li>${s}</li>`).join("")}
+              </ul>
+            `
+                : ""
+            }
+          </div>
+        </div>
+      </div>
+    `;
+        }
+
+        function generateTryItOutSection(info) {
+          const pathParams = info.path ? info.path.match(/:[a-zA-Z]+/g) || [] : [];
+          const queryParams = Array.isArray(info.params)
+            ? info.params.filter((param) => {
+                if (typeof param === "string") {
+                  const paramName = param.split(" ")[0];
+                  return !pathParams.includes(`:${paramName}`);
+                } else if (typeof param === "object" && param.name) {
+                  return !pathParams.includes(`:${param.name}`);
+                }
+                return false;
+              })
+            : [];
+
+          return `
+      <div class="accordion-item try-it-out-accordion">
+        <h2 class="accordion-header" id="headingTryItOut">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTryItOut" aria-expanded="false" aria-controls="collapseTryItOut">
+            Try it out
+          </button>
+        </h2>
+        <div id="collapseTryItOut" class="accordion-collapse collapse" aria-labelledby="headingTryItOut" data-bs-parent="#apiAccordion">
+          <div class="accordion-body">
+            <h3>Testar Endpoint</h3>
+            ${pathParams
+              .map((param) => {
+                const paramName = param.slice(1);
+                return `
+                <div class="mb-3">
+                  <label for="${paramName}" class="form-label">${paramName}</label>
+                  <input type="text" class="form-control" id="${paramName}" placeholder="Digite o ${paramName}">
+                </div>`;
+              })
+              .join("")}
+            ${queryParams
+              .map((param) => {
+                const name = typeof param === "string" ? param.split(" ")[0] : param.name || "";
+                const type = typeof param === "string" ? param.split(" ")[1] : param.type || "";
+                return `
+                <div class="mb-3">
+                  <label for="${name}" class="form-label">${name}</label>
+                  <input type="text" class="form-control" id="${name}" placeholder="${type}">
+                </div>`;
+              })
+              .join("")}
+            <button class="btn btn-success" onclick="testEndpoint('${info.method || ""}', '${info.path || ""}')" aria-label="Executar teste">Execute</button>
+            <button class="btn btn-secondary" onclick="clearInputs(this)" aria-label="Limpar campos">Limpar</button>
+            <div id="testOutput" class="response-container mt-3" style="display: none;">
+              <div class="response-header">Resposta:</div>
+              <div class="response-body position-relative">
+                <button class="copy-button" onclick="copyResponse(this)">Copiar</button>
+                <pre><code class="language-json"></code></pre>
+              </div>
+              <div class="format-selector">
+                <label for="formatSelect" class="form-label">Formato de saída:</label>
+                <select id="formatSelect" class="form-select" onchange="changeOutputFormat(this)">
+                  <option value="json" selected>JSON</option>
+                  <option value="xml">XML</option>
+                  <option value="yaml">YAML</option>
+                </select>
               </div>
             </div>
           </div>
-        `;
+        </div>
+      </div>
+    `;
+        }
+
+        return `
+    <div class="api-item">
+      <div class="api-item-header">
+        <span class="method ${(info.method || "").toLowerCase()}">${info.method || "Unknown"}</span>
+        <span class="path">${info.path || ""}</span>
+        <span class="version-tag">v${info.version || "1.0.0"}</span>
+      </div>
+      <div class="api-item-content">
+        <h2>${info.summary || "No summary provided"}</h2>
+        <p>${info.description || "No description provided"}</p>
+        
+        ${
+          info.permission && info.permission.length > 0
+            ? `<div class="auth-required">
+              <strong>Autenticação requerida:</strong> ${info.permission.join(", ")}
+            </div>`
+            : ""
+        }
+
+        ${
+          info.deprecated
+            ? `<div class="deprecated">
+                <strong>Deprecated:</strong> Este endpoint está obsoleto e será removido em versões futuras.
+                ${info.deprecatedMessage ? `<br>${info.deprecatedMessage}` : ""}
+              </div>`
+            : ""
+        }
+
+        ${
+          info.notes
+            ? `<div class="notes">
+              <h4>Notas Adicionais:</h4>
+              <p>${info.notes}</p>
+            </div>`
+            : ""
+        }
+
+        ${
+          info.sampleRequest
+            ? `<div class="sample-request">
+            <h4>Sample Request:</h4>
+            <pre><code>${info.sampleRequest}</code></pre>
+          </div>`
+            : ""
+        }
+
+        <div class="accordion" id="apiAccordion">
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingParameters">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseParameters" aria-expanded="true" aria-controls="collapseParameters">
+                Parâmetros
+              </button>
+            </h2>
+            <div id="collapseParameters" class="accordion-collapse collapse show" aria-labelledby="headingParameters" data-bs-parent="#apiAccordion">
+              <div class="accordion-body">
+                ${generateParametersSection(info.params)}
+              </div>
+            </div>
+          </div>
+
+          ${generateHeadersSection(info.headers)}
+          ${generateSuccessSection(info)}
+          ${generateErrorSection(info)}
+          ${generateSecuritySection(info)}
+          ${generateTryItOutSection(info)}
+        </div>
+      </div>
+    </div>
+  `;
       }
 
       function formatJson(jsonString) {
@@ -760,7 +860,10 @@
 
       renderSidebar();
       if (apiDocs.length > 0) {
+        console.log("Showing first API item");
         showApiItem(0);
+      } else {
+        console.log("No API items to show");
       }
       hljs.highlightAll();
     </script>

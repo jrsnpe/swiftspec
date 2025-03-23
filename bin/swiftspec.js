@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+//bin\swiftspec.js
 const path = require("path");
 const fs = require("fs");
 const { generateDocs } = require("../lib/generator");

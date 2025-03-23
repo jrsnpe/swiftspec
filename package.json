@@ -1,6 +1,6 @@
 {
   "name": "swiftspec",
-  "version": "1.0.16",
+  "version": "1.0.17",
   "description": "SwiftSpec - Ferramenta de documentação de API rápida e impressionante para Node.js e JavaScript",
   "main": "lib/index.js",
   "bin": {
