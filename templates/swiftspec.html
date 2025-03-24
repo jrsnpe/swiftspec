@@ -3,12 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SwiftSpec - You Awe-Inspiring APIs</title>
+    <title>SwiftSpec - Your Awe-Inspiring APIs</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/styles/default.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/styles/monokai.min.css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/highlight.min.js"></script>
-
     <style>
       body {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -17,7 +15,7 @@
         background-color: #f8f9fa;
       }
       #header {
-        background-color: #343a40;
+        background-color: #0056b3;
         color: white;
         padding: 20px;
       }
@@ -204,12 +202,13 @@
         opacity: 0.9;
         padding-bottom: 2rem;
       }
-      #header {
-        background-color: #0056b3;
-      }
       .btn-outline-light:hover {
         background-color: #00a0e9;
         border-color: #00a0e9;
+      }
+      pre {
+        white-space: pre-wrap;
+        word-wrap: break-word;
       }
     </style>
   </head>
@@ -234,71 +233,35 @@
         <div id="api-content"></div>
       </div>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/highlight.min.js"></script>
     <script>
-      function cleanApiDocs(docs) {
-        return docs.map((doc) => ({
-          ...doc,
-          method: doc.method.replace(/[{}\s]/g, ""),
-        }));
-      }
+      document.addEventListener("DOMContentLoaded", function () {
+        // Funções auxiliares
+        function escapeHtml(unsafe) {
+          if (unsafe == null) return "";
+          if (typeof unsafe !== "string") unsafe = String(unsafe);
+          return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
 
-      let apiDocs;
-      try {
-        apiDocs = cleanApiDocs(JSON.parse(decodeURIComponent("{{API_DOCS_JSON}}")));
-      } catch (error) {
-        console.error("Erro ao parsear API_DOCS_JSON:", error);
-        apiDocs = [];
-      }
-      console.log("API Docs after initialization:", apiDocs);
-
-      function renderSidebar() {
-        const sidebarContent = document.getElementById("sidebar-content");
-        const fragment = document.createDocumentFragment();
-        apiDocs.forEach((api, index) => {
-          const item = document.createElement("div");
-          item.className = "sidebar-item";
-          item.textContent = `${api.method} ${api.path}`;
-          item.onclick = () => showApiItem(index);
-          fragment.appendChild(item);
-        });
-        sidebarContent.appendChild(fragment);
-      }
-
-      function showApiItem(index) {
-        console.log("Showing API item at index:", index);
-        const apiContent = document.getElementById("api-content");
-
-        apiContent.classList.remove("fade-transition");
-        apiContent.style.opacity = 0;
-
-        setTimeout(() => {
-          const info = apiDocs[index];
-          console.log("Generating HTML for API:", info);
-          const generatedHtml = generateApiHtml(info);
-          apiContent.innerHTML = generatedHtml;
-          console.log("Generated HTML content:", generatedHtml);
-          apiContent.classList.add("fade-transition");
-          apiContent.style.opacity = 1;
-
-          initAccordions();
-          hljs.highlightAll();
-        }, 300);
-      }
-
-      function generateApiHtml(info) {
-        console.log("Generating HTML for API:", info);
-
-        if (!info || typeof info !== "object") {
-          console.error("Invalid info object:", info);
-          return "<p>Error: Invalid API information</p>";
+        function generateMetadataSection(info) {
+          return `
+      <div class="api-metadata">
+        <table class="table">
+          <tbody>
+            ${info.permission ? `<tr><td>Permission:</td><td>${info.permission.join(", ")}</td></tr>` : ""}
+            ${info.deprecated ? `<tr><td>Deprecated:</td><td>Yes</td></tr>` : ""}
+          </tbody>
+        </table>
+      </div>
+    `;
         }
 
         function generateParametersSection(params) {
           if (!Array.isArray(params) || params.length === 0) {
             return "<p>Este endpoint não possui parâmetros.</p>";
           }
-
           return `
       <table class="table">
         <thead>
@@ -313,13 +276,13 @@
           ${params
             .map(
               (param) => `
-            <tr>
-              <td>${param.name}</td>
-              <td>${param.type}</td>
-              <td>${param.description}</td>
-              <td class="${param.optional ? "param-optional" : "param-required"}">${param.optional ? "Não" : "Sim"}</td>
-            </tr>
-          `
+              <tr>
+                <td>${param.name}</td>
+                <td>${param.type}</td>
+                <td>${param.description}</td>
+                <td class="${param.optional ? "param-optional" : "param-required"}">${param.optional ? "Não" : "Sim"}</td>
+              </tr>
+            `
             )
             .join("")}
         </tbody>
@@ -330,6 +293,20 @@
         function generateSuccessSection(info) {
           if (!Array.isArray(info.success) || info.success.length === 0) {
             return "";
+          }
+
+          const successExample = info.success.find((s) => s.type === "Example");
+          let exampleContent = "";
+
+          if (successExample) {
+            const exampleMatch = info.description.match(/HTTP\/1\.1 200 OK[\s\S]*?(?=HTTP\/1\.1|$)/);
+            if (exampleMatch) {
+              const { statusLine, jsonContent } = formatJsonExample({ description: exampleMatch[0].trim() });
+              exampleContent = `
+        <h4>${escapeHtml(statusLine)}</h4>
+        <pre><code class="language-json">${escapeHtml(jsonContent)}</code></pre>
+      `;
+            }
           }
 
           return `
@@ -351,24 +328,24 @@
             </thead>
             <tbody>
               ${info.success
+                .filter((s) => s.type !== "Example")
                 .map(
                   (s) => `
                 <tr>
-                  <td>${s.name}</td>
-                  <td>${s.type}</td>
-                  <td>${s.description}</td>
+                  <td>${escapeHtml(s.name)}</td>
+                  <td>${escapeHtml(s.type)}</td>
+                  <td>${escapeHtml(s.description)}</td>
                 </tr>
               `
                 )
                 .join("")}
             </tbody>
           </table>
-          
           ${
-            info.successExample
+            exampleContent
               ? `
-            <h4>Exemplo de Resposta:</h4>
-            <pre><code class="language-json">${escapeHtml(info.successExample)}</code></pre>
+            <h4>Exemplo:</h4>
+            ${exampleContent}
           `
               : ""
           }
@@ -383,6 +360,35 @@
             return "";
           }
 
+          const errorRows = info.error
+            .filter((err) => err.group && err.type && err.description)
+            .map(
+              (err) => `
+      <tr>
+        <td>${escapeHtml(err.group)}</td>
+        <td>${escapeHtml(err.type)}</td>
+        <td>${escapeHtml(err.description)}</td>
+      </tr>
+    `
+            )
+            .join("");
+
+          const errorExamples = info.description
+            .split("HTTP/1.1")
+            .slice(1) // Inclui todos os exemplos começando com "HTTP/1.1"
+            .filter((example) => !example.trim().startsWith("200 OK")) // Filtra exemplos que não são de sucesso
+            .map((example) => {
+              console.log("Exemplo de erro antes da formatação:", example);
+              const { statusLine, jsonContent } = formatJsonExample({ description: "HTTP/1.1" + example.trim() });
+              console.log("Exemplo de erro após formatação:", { statusLine, jsonContent });
+
+              return `
+        <h4>${escapeHtml(statusLine)}</h4>
+        <pre><code class="language-json">${escapeHtml(jsonContent)}</code></pre>
+      `;
+            })
+            .join("");
+
           return `
     <div class="accordion-item">
       <h2 class="accordion-header" id="headingError">
@@ -396,45 +402,127 @@
             <thead>
               <tr>
                 <th>Código</th>
+                <th>Tipo</th>
                 <th>Descrição</th>
               </tr>
             </thead>
             <tbody>
-              ${info.error
-                .map(
-                  (e) => `
-                <tr>
-                  <td>${e.group || e.name}</td>
-                  <td>${e.description}</td>
-                </tr>
-              `
-                )
-                .join("")}
+              ${errorRows}
             </tbody>
           </table>
-          ${info.errorExample
-            .map(
-              (example, index) => `
-            <h4>Exemplo de Erro ${index + 1}:</h4>
-            <pre><code class="language-json">${escapeHtml(example)}</code></pre>
-          `
-            )
-            .join("")}
+          <h3>Exemplos de Erro:</h3>
+          ${errorExamples || "<p>Não há exemplos de erro disponíveis.</p>"}
         </div>
       </div>
     </div>
   `;
         }
 
-        function escapeHtml(unsafe) {
-          return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        function formatJsonExample(example) {
+          if (!example || !example.description) return { statusLine: "", jsonContent: "" };
+
+          let content = example.description.trim();
+          let statusLine = "";
+          let jsonContent = "";
+
+          // Tentar capturar o status HTTP no exemplo ("Error XXX:" ou "HTTP/1.1 XXX ...")
+          const statusMatch = content.match(/(?:HTTP\/\d\.\d|\bError\b)\s+(\d{3}\s+[A-Za-z\s]+)/);
+
+          if (statusMatch) {
+            statusLine = statusMatch[0].trim();
+            // Remova o status da linha do restante do conteúdo
+            content = content.slice(statusMatch.index + statusMatch[0].length).trim();
+          }
+
+          // Capturando o JSON no exemplo
+          try {
+            const jsonStart = content.indexOf("{");
+            const jsonEnd = content.lastIndexOf("}") + 1;
+
+            if (jsonStart !== -1 && jsonEnd !== -1 && jsonStart < jsonEnd) {
+              const jsonStr = content.slice(jsonStart, jsonEnd);
+              const jsonObject = JSON.parse(jsonStr);
+
+              // Formate o conteúdo do JSON como string
+              jsonContent = JSON.stringify(jsonObject, null, 2);
+            } else {
+              jsonContent = content; // Caso não seja JSON, retorne o conteúdo original
+            }
+          } catch (e) {
+            console.warn("Erro ao processar JSON. Retornando conteúdo original:", e);
+            jsonContent = content;
+          }
+
+          return { statusLine, jsonContent };
+        }
+
+        function generateErrorSection(info) {
+          if (!Array.isArray(info.error) || info.error.length === 0) {
+            return "";
+          }
+
+          const errorRows = info.error
+            .filter((err) => err.group && err.type && err.description)
+            .map(
+              (err) => `
+      <tr>
+        <td>${escapeHtml(err.group)}</td>
+        <td>${escapeHtml(err.type)}</td>
+        <td>${escapeHtml(err.description)}</td>
+      </tr>
+    `
+            )
+            .join("");
+
+          const errorExamples = info.description
+            .split("HTTP/1.1")
+            .slice(1) // Inclui todos os exemplos começando com "HTTP/1.1"
+            .filter((example) => !example.trim().startsWith("200 OK")) // Filtra exemplos que não são de sucesso
+            .map((example) => {
+              console.log("Exemplo de erro antes da formatação:", example);
+              const { statusLine, jsonContent } = formatJsonExample({ description: "HTTP/1.1" + example.trim() });
+              console.log("Exemplo de erro após formatação:", { statusLine, jsonContent });
+
+              return `
+        <h4>${escapeHtml(statusLine)}</h4>
+        <pre><code class="language-json">${escapeHtml(jsonContent)}</code></pre>
+      `;
+            })
+            .join("");
+
+          return `
+    <div class="accordion-item">
+      <h2 class="accordion-header" id="headingError">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseError" aria-expanded="false" aria-controls="collapseError">
+          Respostas de Erro
+        </button>
+      </h2>
+      <div id="collapseError" class="accordion-collapse collapse" aria-labelledby="headingError" data-bs-parent="#apiAccordion">
+        <div class="accordion-body">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Tipo</th>
+                <th>Descrição</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${errorRows}
+            </tbody>
+          </table>
+          <h3>Exemplos de Erro:</h3>
+          ${errorExamples || "<p>Não há exemplos de erro disponíveis.</p>"}
+        </div>
+      </div>
+    </div>
+  `;
         }
 
         function generateHeadersSection(headers) {
           if (!Array.isArray(headers) || headers.length === 0) {
             return "";
           }
-
           return `
       <div class="accordion-item">
         <h2 class="accordion-header" id="headingHeaders">
@@ -456,12 +544,12 @@
                 ${headers
                   .map(
                     (h) => `
-                  <tr>
-                    <td>${h.name}</td>
-                    <td>${h.type}</td>
-                    <td>${h.description}</td>
-                  </tr>
-                `
+                    <tr>
+                      <td>${h.name}</td>
+                      <td>${h.type}</td>
+                      <td>${h.description}</td>
+                    </tr>
+                  `
                   )
                   .join("")}
               </tbody>
@@ -476,7 +564,6 @@
           if (!info.securityDefinition && (!Array.isArray(info.security) || info.security.length === 0)) {
             return "";
           }
-
           return `
       <div class="accordion-item">
         <h2 class="accordion-header" id="headingSecurity">
@@ -490,11 +577,11 @@
             ${
               Array.isArray(info.security) && info.security.length > 0
                 ? `
-              <p><strong>Segurança Requerida:</strong></p>
-              <ul>
-                ${info.security.map((s) => `<li>${s}</li>`).join("")}
-              </ul>
-            `
+                <p><strong>Segurança Requerida:</strong></p>
+                <ul>
+                  ${info.security.map((s) => `<li>${s}</li>`).join("")}
+                </ul>
+              `
                 : ""
             }
           </div>
@@ -531,10 +618,10 @@
               .map((param) => {
                 const paramName = param.slice(1);
                 return `
-                <div class="mb-3">
-                  <label for="${paramName}" class="form-label">${paramName}</label>
-                  <input type="text" class="form-control" id="${paramName}" placeholder="Digite o ${paramName}">
-                </div>`;
+                  <div class="mb-3">
+                    <label for="${paramName}" class="form-label">${paramName}</label>
+                    <input type="text" class="form-control" id="${paramName}" placeholder="Digite o ${paramName}">
+                  </div>`;
               })
               .join("")}
             ${queryParams
@@ -542,10 +629,10 @@
                 const name = typeof param === "string" ? param.split(" ")[0] : param.name || "";
                 const type = typeof param === "string" ? param.split(" ")[1] : param.type || "";
                 return `
-                <div class="mb-3">
-                  <label for="${name}" class="form-label">${name}</label>
-                  <input type="text" class="form-control" id="${name}" placeholder="${type}">
-                </div>`;
+                  <div class="mb-3">
+                    <label for="${name}" class="form-label">${name}</label>
+                    <input type="text" class="form-control" id="${name}" placeholder="${type}">
+                  </div>`;
               })
               .join("")}
             <button class="btn btn-success" onclick="testEndpoint('${info.method || ""}', '${info.path || ""}')" aria-label="Executar teste">Execute</button>
@@ -571,49 +658,82 @@
     `;
         }
 
-        return `
+        function logExamples(api) {
+          console.log("Description examples:");
+          api.description
+            .split("HTTP/1.1")
+            .slice(1)
+            .forEach((example, index) => {
+              console.log(`Example ${index + 1}:`, example.trim());
+            });
+
+          console.log("Success example:");
+          const successExample = api.success.find((s) => s.type === "Example");
+          console.log(successExample);
+
+          console.log("Error examples:");
+          const errorExamples = api.error.filter((e) => e.type === "Example");
+          errorExamples.forEach((example, index) => {
+            console.log(`Error example ${index + 1}:`, example);
+          });
+        }
+
+        // Função principal para gerar o HTML da API
+        function generateApiHtml(info) {
+          if (!info || typeof info !== "object") {
+            console.error("Invalid info object:", info);
+            return "<p>Error: Invalid API information</p>";
+          }
+
+          const description = info.description.split("HTTP/1.1")[0];
+
+          return `
     <div class="api-item">
       <div class="api-item-header">
-        <span class="method ${(info.method || "").toLowerCase()}">${info.method || "Unknown"}</span>
-        <span class="path">${info.path || ""}</span>
-        <span class="version-tag">v${info.version || "1.0.0"}</span>
+        <span class="method ${(info.method || "").toLowerCase()}">${escapeHtml(info.method || "Unknown")}</span>
+        <span class="path">${escapeHtml(info.path || "")}</span>
+        <span class="version-tag">v${escapeHtml(info.version || "1.0.0")}</span>
       </div>
       <div class="api-item-content">
-        <h2>${info.summary || "No summary provided"}</h2>
-        <p>${info.description || "No description provided"}</p>
-        
         ${
-          info.permission && info.permission.length > 0
-            ? `<div class="auth-required">
-              <strong>Autenticação requerida:</strong> ${info.permission.join(", ")}
-            </div>`
+          info.sampleRequest
+            ? `
+            <div class="sample-request">
+              <p>Sample Request:</p>
+              <pre><code class="language-json">${escapeHtml(info.sampleRequest)}</code></pre>
+            </div>
+          `
             : ""
         }
+        
+        <hr>
+
+        <h2>${escapeHtml(info.name || info.summary || "No name/summary provided")}</h2>
+        <p><strong>Group:</strong> ${escapeHtml(info.group || "Not specified")}</p>
+        
+        <div class="description">
+          <p>${escapeHtml(description.trim())}</p>
+        </div>
 
         ${
           info.deprecated
-            ? `<div class="deprecated">
-                <strong>Deprecated:</strong> Este endpoint está obsoleto e será removido em versões futuras.
-                ${info.deprecatedMessage ? `<br>${info.deprecatedMessage}` : ""}
-              </div>`
+            ? `
+            <div class="deprecated">
+              <strong>Deprecated:</strong> Este endpoint está obsoleto e será removido em versões futuras.
+              ${info.deprecatedMessage ? `<br>${escapeHtml(info.deprecatedMessage)}` : ""}
+            </div>
+          `
             : ""
         }
 
         ${
           info.notes
-            ? `<div class="notes">
+            ? `
+            <div class="notes">
               <h4>Notas Adicionais:</h4>
-              <p>${info.notes}</p>
-            </div>`
-            : ""
-        }
-
-        ${
-          info.sampleRequest
-            ? `<div class="sample-request">
-            <h4>Sample Request:</h4>
-            <pre><code>${info.sampleRequest}</code></pre>
-          </div>`
+              <p>${escapeHtml(info.notes)}</p>
+            </div>
+          `
             : ""
         }
 
@@ -640,232 +760,235 @@
       </div>
     </div>
   `;
-      }
-
-      function formatJson(jsonString) {
-        try {
-          const obj = JSON.parse(jsonString);
-          return JSON.stringify(obj, null, 2);
-        } catch (e) {
-          return jsonString;
         }
-      }
 
-      function clearInputs(button) {
-        const accordionBody = button.closest(".accordion-body");
-        const inputs = accordionBody.querySelectorAll("input");
-        inputs.forEach((input) => (input.value = ""));
-
-        // Limpar o resultado da consulta
-        const testOutput = accordionBody.querySelector("#testOutput");
-        testOutput.style.display = "none";
-        const outputElement = testOutput.querySelector("pre code");
-        outputElement.textContent = "";
-      }
-
-      function copyResponse(button) {
-        const responseBody = button.closest(".response-body");
-        const codeElement = responseBody.querySelector("code");
-        const textToCopy = codeElement.textContent;
-
-        navigator.clipboard
-          .writeText(textToCopy)
-          .then(() => {
-            const originalText = button.textContent;
-            button.textContent = "Copiado!";
-            setTimeout(() => {
-              button.textContent = originalText;
-            }, 2000);
-          })
-          .catch((err) => {
-            console.error("Erro ao copiar texto: ", err);
+        function renderSidebar() {
+          const sidebarContent = document.getElementById("sidebar-content");
+          const fragment = document.createDocumentFragment();
+          apiDocs.forEach((api, index) => {
+            logApiStructure(api, index);
+            logExamples(api);
+            const item = document.createElement("div");
+            item.className = "sidebar-item";
+            item.textContent = `${api.method} ${api.path}`;
+            item.onclick = () => showApiItem(index);
+            fragment.appendChild(item);
           });
-      }
+          sidebarContent.appendChild(fragment);
+        }
 
-      async function testEndpoint(method, path) {
-        console.log(`Testando endpoint: ${method} ${path}`);
+        function showApiItem(index) {
+          const apiContent = document.getElementById("api-content");
+          apiContent.classList.remove("fade-transition");
+          apiContent.style.opacity = 0;
 
-        method = method.toUpperCase();
+          setTimeout(() => {
+            const info = apiDocs[index];
+            const generatedHtml = generateApiHtml(info);
+            apiContent.innerHTML = generatedHtml;
+            apiContent.classList.add("fade-transition");
+            apiContent.style.opacity = 1;
 
-        const accordionBody = event.target.closest(".accordion-body");
-        const inputs = accordionBody.querySelectorAll("input");
-        const params = {};
-        inputs.forEach((input) => {
-          if (input.value) {
-            params[input.id] = input.id === "id" ? parseInt(input.value, 10) : input.value;
+            hljs.highlightAll();
+          }, 300);
+        }
+
+        function extractExamplesFromDescription(description) {
+          const examples = [];
+          const parts = description.split("HTTP/1.1");
+          parts.slice(1).forEach((part, index) => {
+            const title = index === 0 ? "Success Response:" : `Error ${index}:`;
+            examples.push({
+              type: "Example",
+              name: "{json}",
+              description: title,
+              content: "HTTP/1.1" + part.trim(),
+            });
+          });
+          return examples;
+        }
+
+        function logApiStructure(api, index) {
+          console.log(`API ${index} structure:`, JSON.stringify(api, null, 2));
+          console.log("Description:", api.description);
+          console.log(
+            "Success examples:",
+            api.success.filter((s) => s.type === "Example")
+          );
+          console.log(
+            "Error examples:",
+            api.error.filter((e) => e.type === "Example")
+          );
+        }
+
+        // Funções globais
+        window.testEndpoint = async function (method, path) {
+          try {
+            console.log(`Testando endpoint: ${method} ${path}`);
+            const accordionBody = event.target.closest(".accordion-body");
+            const inputs = accordionBody.querySelectorAll("input");
+            const params = {};
+            inputs.forEach((input) => {
+              if (input.value) {
+                params[input.id] = input.value;
+              }
+            });
+
+            const response = await simulateApiCall(method, path, params);
+            displayTestResult(response);
+          } catch (error) {
+            console.error("Erro ao testar endpoint:", error);
+            displayTestResult({
+              status: 500,
+              data: { error: "Erro interno do servidor", details: error.message },
+            });
           }
-        });
+        };
 
-        console.log("Parâmetros enviados pelo usuário:", params);
+        async function simulateApiCall(method, path, params) {
+          await new Promise((resolve) => setTimeout(resolve, 1000));
 
-        const outputElement = accordionBody.querySelector("#testOutput pre code");
-        const responseContainer = accordionBody.querySelector("#testOutput");
-        responseContainer.style.display = "block";
-
-        try {
-          const baseUrl = "http://localhost:3000"; // Ajuste esta URL conforme necessário
-          let url = new URL(path, baseUrl);
-
-          // Substituir parâmetros de rota
-          Object.keys(params).forEach((key) => {
-            const placeholder = `:${key}`;
-            if (path.includes(placeholder)) {
-              url = new URL(path.replace(placeholder, encodeURIComponent(params[key])), baseUrl);
-              console.log(`Substituído ${placeholder} por ${params[key]} na URL`);
-              delete params[key];
-            }
-          });
-
-          // Adicionar parâmetros de query
-          Object.keys(params).forEach((key) => {
-            url.searchParams.append(key, params[key]);
-            console.log(`Adicionado ${key}=${params[key]} à query string`);
-          });
-
-          console.log(`URL final: ${url.toString()}`);
-
-          const options = {
-            method: method,
-            headers: {
-              "Content-Type": "application/json",
-              Accept: "application/json",
-            },
-          };
-
-          if (method !== "GET" && Object.keys(params).length > 0) {
-            options.body = JSON.stringify(params);
-            console.log("Body da requisição:", options.body);
-          }
-
-          outputElement.textContent = "Carregando...";
-
-          console.log(`Fazendo requisição: ${method} ${url}`);
-          const response = await fetch(url, options);
-
-          console.log("Status da resposta:", response.status);
-          console.log("Headers da resposta:", Object.fromEntries(response.headers.entries()));
-
-          let responseData;
-          const contentType = response.headers.get("content-type");
-          if (contentType && contentType.includes("application/json")) {
-            responseData = await response.json();
+          if (Math.random() > 0.2) {
+            return {
+              status: 200,
+              data: {
+                message: "Operação bem-sucedida",
+                params: params,
+                timestamp: new Date().toISOString(),
+              },
+            };
           } else {
-            responseData = await response.text();
+            throw new Error("Falha na operação");
+          }
+        }
+
+        function displayTestResult(response) {
+          const testOutput = document.getElementById("testOutput");
+          const codeElement = testOutput.querySelector("pre code");
+
+          testOutput.style.display = "block";
+          codeElement.textContent = JSON.stringify(response, null, 2);
+          hljs.highlightElement(codeElement);
+        }
+
+        window.clearInputs = function (button) {
+          const accordionBody = button.closest(".accordion-body");
+          const inputs = accordionBody.querySelectorAll("input");
+          inputs.forEach((input) => (input.value = ""));
+          const testOutput = accordionBody.querySelector("#testOutput");
+          testOutput.style.display = "none";
+          const outputElement = testOutput.querySelector("pre code");
+          outputElement.textContent = "";
+        };
+
+        window.copyResponse = function (button) {
+          const responseBody = button.closest(".response-body");
+          const codeElement = responseBody.querySelector("code");
+          const textToCopy = codeElement.textContent;
+
+          navigator.clipboard
+            .writeText(textToCopy)
+            .then(() => {
+              const originalText = button.textContent;
+              button.textContent = "Copiado!";
+              setTimeout(() => {
+                button.textContent = originalText;
+              }, 2000);
+            })
+            .catch((err) => {
+              console.error("Erro ao copiar texto: ", err);
+            });
+        };
+
+        window.changeOutputFormat = function (select) {
+          const format = select.value;
+          const outputElement = select.closest(".response-container").querySelector("pre code");
+          const currentContent = outputElement.textContent;
+
+          let formattedContent;
+          switch (format) {
+            case "xml":
+              formattedContent = jsonToXml(JSON.parse(currentContent));
+              break;
+            case "yaml":
+              formattedContent = jsonToYaml(JSON.parse(currentContent));
+              break;
+            default:
+              formattedContent = currentContent;
           }
 
-          console.log("Dados da resposta:", responseData);
-
-          let formattedResponse = `Status: ${response.status} ${response.statusText}\n\n`;
-          if (typeof responseData === "object") {
-            formattedResponse += JSON.stringify(responseData, null, 2);
-          } else {
-            formattedResponse += responseData;
-          }
-          outputElement.textContent = formattedResponse;
-
-          // Aplicar highlight.js
-          outputElement.className = "language-json";
+          outputElement.textContent = formattedContent;
           hljs.highlightElement(outputElement);
-        } catch (error) {
-          console.error("Erro na requisição:", error);
-          outputElement.textContent = `Erro: ${error.message}`;
-          outputElement.className = "language-plaintext";
-          hljs.highlightElement(outputElement);
-        }
-      }
+        };
 
-      function changeOutputFormat(select) {
-        const format = select.value;
-        const outputElement = select.closest(".response-container").querySelector("pre code");
-        const currentContent = outputElement.textContent;
-
-        let formattedContent;
-        switch (format) {
-          case "xml":
-            formattedContent = jsonToXml(JSON.parse(currentContent));
-            break;
-          case "yaml":
-            formattedContent = jsonToYaml(JSON.parse(currentContent));
-            break;
-          default:
-            formattedContent = currentContent;
-        }
-
-        outputElement.textContent = formattedContent;
-        hljs.highlightElement(outputElement);
-      }
-
-      function jsonToXml(obj) {
-        let xml = "";
-        for (let prop in obj) {
-          xml += obj[prop] instanceof Array ? "" : "<" + prop + ">";
-          if (obj[prop] instanceof Array) {
-            for (let array in obj[prop]) {
-              xml += "<" + prop + ">";
-              xml += jsonToXml(new Object(obj[prop][array]));
-              xml += "</" + prop + ">";
-            }
-          } else if (typeof obj[prop] == "object") {
-            xml += jsonToXml(new Object(obj[prop]));
-          } else {
-            xml += obj[prop];
-          }
-          xml += obj[prop] instanceof Array ? "" : "</" + prop + ">";
-        }
-        return xml.replace(/<\/?[0-9]{1,}>/g, "");
-      }
-
-      function jsonToYaml(obj, indent = "") {
-        let yaml = "";
-        for (let key in obj) {
-          if (obj.hasOwnProperty(key)) {
-            if (Array.isArray(obj[key])) {
-              yaml += `${indent}${key}:\n`;
-              obj[key].forEach((item) => {
-                yaml += `${indent}- ${jsonToYaml(item, indent + "  ")}`;
-              });
-            } else if (typeof obj[key] === "object") {
-              yaml += `${indent}${key}:\n${jsonToYaml(obj[key], indent + "  ")}`;
+        function jsonToXml(obj) {
+          let xml = "";
+          for (let prop in obj) {
+            xml += obj[prop] instanceof Array ? "" : "<" + prop + ">";
+            if (obj[prop] instanceof Array) {
+              for (let array in obj[prop]) {
+                xml += "<" + prop + ">";
+                xml += jsonToXml(new Object(obj[prop][array]));
+                xml += "</" + prop + ">";
+              }
+            } else if (typeof obj[prop] == "object") {
+              xml += jsonToXml(new Object(obj[prop]));
             } else {
-              yaml += `${indent}${key}: ${obj[key]}\n`;
+              xml += obj[prop];
+            }
+            xml += obj[prop] instanceof Array ? "" : "</" + prop + ">";
+          }
+          return xml.replace(/<\/?[0-9]{1,}>/g, "");
+        }
+
+        function jsonToYaml(obj, indent = "") {
+          let yaml = "";
+          for (let key in obj) {
+            if (obj.hasOwnProperty(key)) {
+              if (Array.isArray(obj[key])) {
+                yaml += `${indent}${key}:\n`;
+                obj[key].forEach((item) => {
+                  yaml += `${indent}- ${jsonToYaml(item, indent + "  ")}`;
+                });
+              } else if (typeof obj[key] === "object") {
+                yaml += `${indent}${key}:\n${jsonToYaml(obj[key], indent + "  ")}`;
+              } else {
+                yaml += `${indent}${key}: ${obj[key]}\n`;
+              }
             }
           }
+          return yaml;
         }
-        return yaml;
-      }
 
-      function initAccordions() {
-        // Bootstrap 5 handles accordions automatically
-      }
+        // Inicialização
+        let apiDocs;
+        try {
+          const rawJson = decodeURIComponent("{{API_DOCS_JSON}}");
+          if (!rawJson.trim()) {
+            throw new Error("Empty API_DOCS_JSON");
+          }
+          apiDocs = JSON.parse(rawJson).filter((api) => api.method && api.path);
+          console.log("Parsed API docs:", apiDocs);
+        } catch (error) {
+          console.error("Erro ao parsear API_DOCS_JSON:", error);
+          apiDocs = [];
+        }
 
-      function toggleContent() {
-        const userTab = document.getElementById("users-tab");
-        const devTab = document.getElementById("developers-tab");
-        const userContent = document.getElementById("user-content");
-        const devContent = document.getElementById("developer-content");
-        const apiContent = document.getElementById("api-content");
-
-        userTab.addEventListener("click", () => {
-          userContent.style.display = "block";
-          devContent.style.display = "none";
-          apiContent.style.display = "none";
+        renderSidebar();
+        if (apiDocs.length > 0) {
+          console.log("Showing first API item");
+          showApiItem(0);
+        } else {
+          console.log("No API items to show");
+        }
+      });
+    </script>
+    <script>
+      document.addEventListener("DOMContentLoaded", (event) => {
+        document.querySelectorAll("pre code").forEach((block) => {
+          hljs.highlightBlock(block);
         });
-
-        devTab.addEventListener("click", () => {
-          userContent.style.display = "none";
-          devContent.style.display = "block";
-          apiContent.style.display = "none";
-        });
-      }
-
-      renderSidebar();
-      if (apiDocs.length > 0) {
-        console.log("Showing first API item");
-        showApiItem(0);
-      } else {
-        console.log("No API items to show");
-      }
-      hljs.highlightAll();
+      });
     </script>
   </body>
 </html>

@@ -1,11 +1,18 @@
 module.exports = {
   env: {
+    browser: true,
     node: true,
     es2021: true,
   },
   extends: "eslint:recommended",
   parserOptions: {
-    ecmaVersion: 12,
+    ecmaVersion: 2021,
+    sourceType: "module",
   },
-  rules: {},
+  globals: {
+    hljs: "readonly",
+  },
+  rules: {
+    // Você pode adicionar regras personalizadas aqui
+  },
 };
